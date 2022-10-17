@@ -1,16 +1,15 @@
-// const fs = require("fs").promises;
-// const path = require("path");
-// console.log(__filename);
-// console.log(__dirname);
-import { nanoid } from "nanoid";
 import fs from "fs/promises";
-import path from "path";
 import { fileURLToPath } from "url";
-import { dirname } from "path";
+import path, { dirname } from "path";
+import { nanoid } from "nanoid";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// const fs = require("fs").promises;
+// const path = require("path");
+// const { nanoid } = require("nanoid"); - потрібна версія 3.3.4
+
 const contactsPath = path.join(__dirname, "./db/contacts.json");
-// console.log(contactsPath);
 
 export async function listContacts() {
   try {
@@ -25,45 +24,51 @@ export async function listContacts() {
 export async function getContactById(contactId) {
   try {
     const contacts = await listContacts();
-    // console.table(contacts);
     const contact = contacts.find((el) => el.id === contactId);
-    console.log(contact);
+    return contact || null;
   } catch (error) {
     console.log(error);
   }
 }
-// getContactById("5");
 
 export async function removeContact(contactId) {
   try {
     const contacts = await listContacts();
-    // console.table(contacts);
-    const newContacts = contacts.filter((el) => el.id !== contactId);
-    // console.log(JSON.stringify(newContacts));
-    await fs.writeFile(contactsPath, JSON.stringify(newContacts, null, "\t"));
+    const index = contacts.findIndex((el) => el.id === contactId);
+    if (index === -1) {
+      return null;
+    }
+    const removedContact = contacts.splice(index, 1);
+    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+
+    return removedContact;
   } catch (error) {
     console.log(error);
   }
 }
-// removeContact("Rh-0O6P6RFiiQV2TEmhlU");
 
 export async function addContact(name, email, phone) {
   try {
     const contacts = await listContacts();
-    // console.table(contacts);
     const newContact = {
       id: nanoid(),
       name,
       email,
       phone,
     };
-    console.log(JSON.stringify(newContact));
+
     await fs.writeFile(
       contactsPath,
-      JSON.stringify([newContact, ...contacts], null, "\t")
+      JSON.stringify([newContact, ...contacts], null, 2)
     );
+    return newContact;
   } catch (error) {
     console.log(error);
   }
 }
-// addContact("Rosy Sim", "rosi@com.ua", "033-333-3333");
+// module.exports = {
+//   listContacts,
+//   getContactById,
+//   removeContact,
+//   addContact,
+// };
